@@ -1,5 +1,6 @@
 ﻿#include <iostream>
 #include <string>
+
 using namespace std;
 
 class Products
@@ -129,6 +130,7 @@ public:
 	}
 };
 
+
 int main()
 {
 	setlocale(LC_ALL, "Russian");
@@ -140,72 +142,106 @@ int main()
 	Sausages* sausages_obj = NULL;
 	Cookies* cookies_obj = NULL;
 
+	
 	while (true)
 	{
-		cout << endl << "Введите цену: ";
-		cin >> price_value;
 
+		cout << endl << "Введите цену: ";
+		while (!(cin >> price_value))
+		{
+			cout << "Некорректный ввод!!! Повторите ...\n";
+			cout << "Введите цену: ";
+			cin.clear();
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+		}
+		
 		cout << "Введите массу: ";
-		cin >> mass_value;
+		while (!(cin >> mass_value))
+		{
+			cout << "Некорректный ввод!!! Повторите ...\n";
+			cout << "Введите массу: ";
+			cin.clear();
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+		}
 
 		cout << "Введите тип продукта: " << endl << "1. Молоко\n2. Сосиски\n3. Печенье\n";
 		cin >> product_type_value;
+		if (product_type_value == 1 || product_type_value == 2 || product_type_value == 3) {
 
-		switch (product_type_value)
-		{
-		case 1:
-			cout << "Введите тип упаковки: ";
-			cin >> package_type_value;
 
-			cout << "Введите жирность: ";
-			cin >> fat_value;
-
-			milk_obj = new Milk(price_value, mass_value, product_type_value, package_type_value, fat_value);
-
-			break;
-		case 2:
-			cout << "Тип: ";
-			cin >> type_value;
-
-			cout << "Количество: ";
-			cin >> amount_value;
-
-			sausages_obj = new Sausages(price_value, mass_value, product_type_value, type_value, amount_value);
-
-			break;
-		case 3:
-			cout << "Введите производителя: ";
-			cin >> manufacturer_value;
-
-			cout << "Содержит шоколад?\n1. Да\n2. Нет " << endl;
-			cin >> i;
-			if (i == 1)
+			switch (product_type_value)
 			{
-				contains_chocolate_value = true;
-			}
-			else
-			{
-				contains_chocolate_value = false;
-			}
+			case 1:
+				cout << "Введите тип упаковки: ";
+				cin >> package_type_value;
+				
+				cout << "Введите жирность: ";
+				while (!(cin >> fat_value))
+				{
+					cout << "Некорректный ввод!!! Повторите ...\n";
+					cout << "Введите жирность: ";
+					cin.clear();
+					cin.ignore(numeric_limits<streamsize>::max(), '\n');
+				}
 
-			cookies_obj = new Cookies(price_value, mass_value, product_type_value, manufacturer_value, contains_chocolate_value);
+				milk_obj = new Milk(price_value, mass_value, product_type_value, package_type_value, fat_value);
 
-			break;
-		default:
-			if (milk_obj != NULL)
-			{
-				delete milk_obj;
+				break;
+			case 2:
+				cout << "Тип: ";
+				cin >> type_value;
+
+				cout << "Количество: ";
+				while (!(cin >> amount_value))
+				{
+					cout << "Некорректный ввод!!! Повторите ...\n";
+					cout << "Количество: ";
+					cin.clear();
+					cin.ignore(numeric_limits<streamsize>::max(), '\n');
+				}
+
+				sausages_obj = new Sausages(price_value, mass_value, product_type_value, type_value, amount_value);
+
+				break;
+			case 3:
+				cout << "Введите производителя: ";
+				cin >> manufacturer_value;
+
+				cout << "Содержит шоколад?\n1. Да\n2. Нет " << endl;
+				cin >> i;
+
+				if (i == 1)
+				{
+					contains_chocolate_value = true;
+				}
+				else
+				{
+					contains_chocolate_value = false;
+				}
+				
+				cookies_obj = new Cookies(price_value, mass_value, product_type_value, manufacturer_value, contains_chocolate_value);
+
+				break;
+			default:
+				if (milk_obj != NULL)
+				{
+					delete milk_obj;
+				}
+				if (sausages_obj != NULL)
+				{
+					delete sausages_obj;
+				}
+				if (cookies_obj != NULL)
+				{
+					delete cookies_obj;
+				}
+				exit(0);
+				break;
 			}
-			if (sausages_obj != NULL)
-			{
-				delete sausages_obj;
-			}
-			if (cookies_obj != NULL)
-			{
-				delete cookies_obj;
-			}
-			exit(0);
-			break;
 		}
+		else {
+			cout << "Продукт не выбран!";
+		}
+		
 	}
 }
