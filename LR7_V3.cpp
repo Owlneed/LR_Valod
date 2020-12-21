@@ -1,6 +1,7 @@
 ﻿#include <iostream>
 using namespace std;
 
+
 template <class T>
 class Node
 {
@@ -16,18 +17,26 @@ class List
 	int Count; // количество элементов в листе
 public:
 	List() : Head(NULL), Tail(NULL), Count(0) {};
+	List(const List& list) : List()
+	{
+		Node<T>* node = list.Head;
+		while (node) {
+			Add(node->data);
+			node = node->Next;
+		}
+	}
 	~List();
 
 	void Show(); // получение данных из списка
 	void Add(T data); // добавление элемента в конец списка
 	void Delete(); // удаление элемента из конца списка
 
-	bool operator == (const List<T>&);  //перегрузка оператора ==
+	bool operator == (const List<T>&); //перегрузка оператора ==
 
 	//перегрузка оператора вывода
-	friend ostream& operator<<(ostream& os, const List<T>& List)
+	friend ostream& operator<<(ostream& os, const List<T>& L)
 	{
-		Node<T>* temp = List.Head;
+		Node<T>* temp = L.Head;
 		while (temp != NULL)
 		{
 			os << temp->data << " ";
@@ -87,74 +96,140 @@ void List<T>::Show()
 	while (temp != NULL)
 	{
 		cout << temp->data << " ";
-		temp = temp->Next; 
+		temp = temp->Next;
 	}
 	cout << "\n";
 }
 
 template <class T>
-bool List<T>::operator == (const List<T>& List)
+bool List<T>::operator == (const List<T>& L)
 {
-	if (Count != List.Count)
+	if (Count != L.Count)
 	{
 		return false;
 	}
 
-	Node<T>* element_List1, *element_List2;
-	element_List1 = Head;
-	element_List2 = List.Head;
+	Node<T>* t1, *t2;
+	t1 = Head;
+	t2 = L.Head;
 
-	while (element_List1 != NULL)
+	while (t1 != NULL)
 	{
-		if (element_List1->data != element_List2->data)
+		if (t1->data != t2->data)
 		{
 			return false;
 		}
 
-		element_List1 = element_List1->Next;
-		element_List2 = element_List2->Next;
+		t1 = t1->Next;
+		t2 = t2->Next;
 	}
 
 	return true;
 }
 
-void readNumber(int &size)
-{
-	bool isNotCorrect = true;
-	while (isNotCorrect) {
-		while (!(cin >> size))
-		{
-			cout << "Некорректные данные! Повторите ввод ..\n";
-
-			cin.clear();
-			cin.ignore(numeric_limits<streamsize>::max(), '\n');
-		}
-		if (size > 1) {
-			isNotCorrect = false;
-		}
-		else {
-			cout << "Минимальное количество элементов списка = 2! Повторите ввод ..\n";
-		}
-	}
-	
-}
-
 template <class T>
-void readElements(List<T>& List, int size) {
-	int element;
-	while (size > 0)
+class Transaction //класс поддержки транзакций
+{
+	T* that; //текущее значение 
+	T* prev; //предыдущее значение 
+public:
+	Transaction() : prev(NULL), that(new T) {}
+	Transaction(const Transaction& obj) : prev(NULL), that(new T(*(obj.that))) {}
+	~Transaction()
 	{
-		cout << "Элемент списка: ";
-		cin >> element;
-		List.Add(element);
-		size--;
-	} 
+		delete that;
+		delete prev;
+	}
+	Transaction& operator= (const Transaction& obj);
+	void Show(int);
+	int BeginTransaction(); //начало транзакции
+	void Commit(); //закрепление транзакции
+	void DeleteTransaction(); //отмена транзакции
+	T* operator->();
+};
+
+template <class T>
+Transaction<T>& Transaction<T>::operator= (const Transaction<T>& obj)
+{
+	if (this != &obj)
+	{
+		delete that;
+		that = new T(*(obj.that));
+	}
+	return *this;
 }
 
 template <class T>
-void isEqual(List<T>& firstList, List<T>& secondList)
+T* Transaction<T>::operator->()
 {
-	if (firstList == secondList)
+	return that;
+}
+
+template <class T>
+void Transaction<T>::Show(int fl)
+{
+	cout << "Object state ";
+	if (!fl)
+	{
+		cout << "Before the transaction " << endl;
+	}
+	else
+	{
+		cout << "After the transaction " << endl;
+	}
+
+	if (prev)
+	{
+		cout << "prev = ";
+		prev->Show();
+	}
+	else
+	{
+		cout << "prev = NULL" << endl;
+	}
+	cout << "that = ";
+	that->Show();
+}
+
+template <class T>
+int Transaction<T>::BeginTransaction()
+{
+	delete prev;
+	prev = that;
+	that = new T(*prev);
+
+	if (!that)
+	{
+		return 0;
+	}
+
+	that->Add(9);
+
+	return 1;
+}
+
+template <class T>
+void Transaction<T>::Commit()
+{
+	delete prev;
+	prev = NULL;
+}
+
+template <class T>
+void Transaction<T>::DeleteTransaction()
+{
+	if (prev != NULL)
+	{
+		delete that;
+		that = prev;
+		prev = NULL;
+	}
+}
+
+template <class T>
+void isEqual(List<T>& transaction, List<T>& transaction2)
+{
+	if (transaction == transaction2)
 	{
 		cout << "Списки равны." << endl;
 	}
@@ -166,38 +241,33 @@ void isEqual(List<T>& firstList, List<T>& secondList)
 
 int main()
 {
-	/*List<char> firstList; 
-	firstList.Add('f');
-	firstList.Add('=');
-	firstList.Add('4');
-	firstList.Add('-');
+	Transaction<List<int>> transaction;
+	transaction->Add(4);
+	transaction->Add(2);
+	transaction->Add(8);
+	transaction.Show(0);
 
-	List<char> secondList; 
-	secondList.Add('f'); 
-	secondList.Add('=');
-	secondList.Add('4');
-	secondList.Add('+');*/
-	
-	setlocale(LC_ALL, "Russian");
-	
-	List<int> firstList;
-	List<int> secondList;
+	if (transaction.BeginTransaction())
+	{
+		transaction.Show(1);
+		transaction.Commit();
+	}
+	transaction.Show(0);
 
-	int firstsize = 0, secondsize = 0;
+	if (transaction.BeginTransaction())
+	{
+		transaction.Show(1);
+		transaction.Commit();
+	}
+	transaction.Show(0);
 
-	cout << "Введите количество элементов первого списка: ";
-	readNumber(firstsize);
-	readElements(firstList, firstsize);
 
-	cout << "Введите количество элементов второго списка: ";
-	readNumber(secondsize);
-	readElements(secondList, secondsize); //*/
-	
-	cout << firstList << secondList;
+	transaction.BeginTransaction();
+	transaction->Add(2);
+	transaction.Show(1);
+	transaction.DeleteTransaction();
+	transaction.Show(0);
 
-	isEqual(firstList, secondList);
-
-	firstList.Delete();	
-	secondList.Delete();
-	cout << firstList << secondList;
 }
+
+
